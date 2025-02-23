@@ -12,5 +12,11 @@ func SetupRoutes(router *gin.Engine) {
 		c.JSON(http.StatusOK, gin.H{"message": "Este es un método GET"})
 	})
 
-	router.POST("/api/v1/database", controllers.HandleDatabaseConnection)
+	dbGroup := router.Group("/api/v1/database")
+	{
+		dbGroup.POST("/", controllers.SaveDatabaseConfiguration)
+		dbGroup.POST("/scan/:id", controllers.ScanDatabaseByID)
+	}
+
+	router.POST("/api/v1/database", controllers.SaveDatabaseConfiguration)
 }

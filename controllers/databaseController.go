@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"net/http"
+	"strconv"
 
 	"Database_Analyzer/models"
 	"Database_Analyzer/services"
@@ -9,19 +10,39 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func HandleDatabaseConnection(c *gin.Context) {
+func SaveDatabaseConfiguration(c *gin.Context) {
 
-	var dbConn models.DatabaseConnection
+	var dbConn models.DatabaseConfiguration
 
 	if err := c.ShouldBindJSON(&dbConn); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"Error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "Error": err.Error()})
 		return
 	}
 
-	if err := services.SaveDatabaseConfiguration(&dbConn); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error saving the db connection"})
+	id, err := services.SaveDatabaseConfiguration(&dbConn)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"status": http.StatusInternalServerError, "error": "Error guardando en MongoDB"})
+		return
 	}
 
-	c.JSON(http.StatusOK, dbConn)
+	c.JSON(http.StatusCreated, gin.H{
+		"status": 201,
+		"id":     id,
+	})
+}
 
+func ScanDatabaseByID(c *gin.Context) {
+	idParam := c.Param("id")
+	id, err := strconv.Atoi(idParam)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "error": "ID must be a Integer"})
+		return
+	}
+
+	dbConfig, err := services.GetDatabaseByID(id)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"status": http.StatusNotFound, "error": "Database Configuration NOT FOUND"})
+		return
+	}
+	c.JSON(http.StatusOK, dbConfig)
 }
