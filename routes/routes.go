@@ -12,5 +12,5 @@ func SetupRoutes(router *gin.Engine) {
 		c.JSON(http.StatusOK, gin.H{"message": "Este es un método GET"})
 	})
 
-	router.POST("/post", controllers.HandlePost)
+	router.POST("/api/v1/database", controllers.HandleDatabaseConnection)
 }
