@@ -21,7 +21,7 @@ func SaveDatabaseConfiguration(c *gin.Context) {
 
 	id, err := services.SaveDatabaseConfiguration(&dbConn)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"status": http.StatusInternalServerError, "error": "Error guardando en MongoDB"})
+		c.JSON(http.StatusInternalServerError, gin.H{"status": http.StatusInternalServerError, "error": "Error saving in MongoDB", "cause": err.Error()})
 		return
 	}
 

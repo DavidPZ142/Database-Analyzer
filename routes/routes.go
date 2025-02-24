@@ -17,6 +17,4 @@ func SetupRoutes(router *gin.Engine) {
 		dbGroup.POST("/", controllers.SaveDatabaseConfiguration)
 		dbGroup.POST("/scan/:id", controllers.ScanDatabaseByID)
 	}
-
-	router.POST("/api/v1/database", controllers.SaveDatabaseConfiguration)
 }
