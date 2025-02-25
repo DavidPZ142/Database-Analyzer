@@ -42,7 +42,7 @@ func ScanDatabaseByID(c *gin.Context) {
 
 	err = services.ScanDatabaseByID(id)
 	if err != nil {
-		if errors.Is(err, services.ErrConfigurationNotFound) {
+		if errors.Is(err, services.ErrConfigurationNotFound) || errors.Is(err, services.ErrInfoNotFound) {
 			c.JSON(http.StatusNotFound, gin.H{"status": http.StatusNotFound, "error": err.Error()})
 			return
 		}
@@ -51,6 +51,7 @@ func ScanDatabaseByID(c *gin.Context) {
 			return
 		}
 		c.JSON(http.StatusInternalServerError, gin.H{"status": http.StatusInternalServerError, "error": err.Error()})
+		return
 	}
 	c.JSON(http.StatusCreated, gin.H{})
 }
