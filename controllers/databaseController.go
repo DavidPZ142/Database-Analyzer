@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"errors"
 	"net/http"
 	"strconv"
 
@@ -21,7 +22,7 @@ func SaveDatabaseConfiguration(c *gin.Context) {
 
 	id, err := services.SaveDatabaseConfiguration(&dbConn)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"status": http.StatusInternalServerError, "error": "Error saving in MongoDB", "cause": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"status": http.StatusInternalServerError, "error": err.Error()})
 		return
 	}
 
@@ -39,10 +40,17 @@ func ScanDatabaseByID(c *gin.Context) {
 		return
 	}
 
-	dbConfig, err := services.GetDatabaseByID(id)
+	err = services.ScanDatabaseByID(id)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"status": http.StatusNotFound, "error": "Database Configuration NOT FOUND"})
-		return
+		if errors.Is(err, services.ErrConfigurationNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"status": http.StatusNotFound, "error": err.Error()})
+			return
+		}
+		if errors.Is(err, services.ErrDatabaseFailed) || errors.Is(err, services.ErrEnconding) {
+			c.JSON(http.StatusFailedDependency, gin.H{"status": http.StatusFailedDependency, "error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"status": http.StatusInternalServerError, "error": err.Error()})
 	}
-	c.JSON(http.StatusOK, dbConfig)
+	c.JSON(http.StatusCreated, gin.H{})
 }

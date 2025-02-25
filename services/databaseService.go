@@ -5,7 +5,7 @@ import (
 	"Database_Analyzer/models"
 	"Database_Analyzer/utils"
 	"context"
-	"fmt"
+	"errors"
 	"log"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -13,19 +13,24 @@ import (
 	"time"
 )
 
+var ErrInsertDocument = errors.New("error saving document")
+var ErrConfigurationNotFound = errors.New("database configuration not found")
+var ErrDatabaseFailed = errors.New("database service has failed")
+var ErrEnconding = errors.New("encoding failed")
+
 func SaveDatabaseConfiguration(dbConn *models.DatabaseConfiguration) (int, error) {
 
 	newID, err := GetNextID("DatabaseConfiguration")
 	if err != nil {
 		log.Println("❌ Errror trying generate ID:", err)
-		return 0, fmt.Errorf("error trying generate ID: %v", err)
+		return 0, ErrInsertDocument
 	}
 	dbConn.ID = newID
 
 	encodePassword, err := utils.Encrypt(dbConn.Password)
 	if err != nil {
 		log.Println("❌ Error Encoding password :", err)
-		return 0, err
+		return 0, ErrEnconding
 	}
 
 	dbConn.Password = encodePassword
@@ -36,9 +41,17 @@ func SaveDatabaseConfiguration(dbConn *models.DatabaseConfiguration) (int, error
 
 	_, err = collection.InsertOne(ctx, dbConn)
 	if err != nil {
-		return 0, err
+		return 0, ErrInsertDocument
 	}
 	return dbConn.ID, nil
+}
+
+func ScanDatabaseByID(id int) error {
+	databaseConfig, err := GetDatabaseByID(id)
+	if err != nil {
+		return err
+	}
+	return ConnectDatabaseMysql(databaseConfig)
 }
 
 func GetDatabaseByID(id int) (*models.DatabaseConfiguration, error) {
@@ -53,14 +66,23 @@ func GetDatabaseByID(id int) (*models.DatabaseConfiguration, error) {
 	err := collection.FindOne(ctx, filter).Decode(&dbConfig)
 	if err != nil {
 		log.Println("❌ Error Getting configuration :", err)
-		return nil, err
+		return nil, ErrConfigurationNotFound
 	}
-
-	decodePassword, err := utils.Decrypt(dbConfig.Password)
-	if err != nil {
-		return nil, err
-	}
-	dbConfig.Password = decodePassword
 
 	return &dbConfig, nil
+}
+
+func ConnectDatabaseMysql(dbConfig *models.DatabaseConfiguration) error {
+	decryptedPassword, err := utils.Decrypt(dbConfig.Password)
+	if err != nil {
+		log.Println("❌ Password cracking failed:", err)
+		return ErrEnconding
+	}
+
+	err = config.ConnectMySQL(dbConfig.Host, dbConfig.Port, dbConfig.Username, decryptedPassword)
+	if err != nil {
+		log.Println("❌ Could not establish a connection to MySQL:", err)
+		return ErrDatabaseFailed
+	}
+	return nil
 }
