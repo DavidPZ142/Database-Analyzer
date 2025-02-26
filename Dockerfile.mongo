@@ -1,0 +1,8 @@
+FROM mongo:latest
+
+COPY init-mongo.js /init-mongo.js
+COPY mongo-init.sh /mongo-init.sh
+
+RUN chmod +x /mongo-init.sh
+
+CMD ["bash", "-c", "docker-entrypoint.sh mongod & sleep 5 && /mongo-init.sh && tail -f /dev/null"]

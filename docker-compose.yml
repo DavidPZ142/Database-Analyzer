@@ -1,0 +1,43 @@
+services:
+  mongo:
+    build:
+      context: .
+      dockerfile: Dockerfile.mongo
+    container_name: mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: meli
+      MONGO_INITDB_ROOT_PASSWORD: secretPassword
+    ports:
+      - "27017:27017"
+    restart: always
+  mysql:
+    image: mysql:latest
+    container_name: mysql1
+    environment:
+      MYSQL_ROOT_PASSWORD: ultrasecret
+      MYSQL_USER: miusuario
+      MYSQL_PASSWORD: userpassword
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./databaseSuperMarket.sql:/docker-entrypoint-initdb.d/databaseSuperMarket.sql
+    restart: always
+
+  app:
+    build: .
+    container_name: go_app
+    depends_on:
+      - mongo
+      - mysql
+    environment:
+      MONGO_URI: "mongodb://meli:secretPassword@mongo:27017/"
+      MONGO_DATABASE: "test"
+      ENCRYPTION_KEY  : "djtGiEcL10b70jsluK0lRA=="
+    ports:
+      - "8080:8080"
+    restart: always
+
+volumes:
+  mongo_data:
+  mysql_data:
