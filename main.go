@@ -12,7 +12,7 @@ import (
 func main() {
 	err := config.ConnectDatabase()
 	if err != nil {
-		log.Println("🔥 Critic error to conectar con MongoDB")
+		log.Println("🔥 Critic error to connect to MongoDB")
 		panic(err)
 	}
 	router := gin.Default()

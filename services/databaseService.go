@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+
 	_ "regexp"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -18,7 +19,8 @@ import (
 
 var ErrInsertDocument = errors.New("error saving document")
 var ErrConfigurationNotFound = errors.New("database configuration not found")
-var ErrInfoNotFound = errors.New("database Schema not found")
+var ErrReportNotFound = errors.New("database report not found")
+var ErrUserWithoutPrivilegies = errors.New("the user hasn't privilegies to execute this query")
 var ErrDatabaseFailed = errors.New("database service has failed")
 var ErrEnconding = errors.New("encoding failed")
 
@@ -65,16 +67,36 @@ func ScanDatabaseByID(id int) error {
 		return err
 	}
 	defer DBMySQL.Close()
-	rows, err := DBMySQL.Query(query)
+
+	report, err := GenerateReport(DBMySQL, id)
 	if err != nil {
-		log.Println("Error running query")
 		return err
 	}
-	if !rows.Next() {
-		log.Println("Not found schemas information")
-		return ErrInfoNotFound
-	}
+	collection := config.GetDatabase().Collection("DatabaseReport")
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 
+	_, err = collection.InsertOne(ctx, report)
+	if err != nil {
+		return ErrInsertDocument
+	}
+	return nil
+}
+
+func GenerateReport(db *sql.DB, id int) (*models.Report, error) {
+	rows, err := db.Query(query)
+	if err != nil {
+		log.Println("Error running query")
+		return nil, err
+	}
+	if !rows.Next() {
+		log.Printf("User without privilegies to execute this query %v", query)
+		return nil, ErrUserWithoutPrivilegies
+	}
+	report := &models.Report{
+		ID:     id,
+		Tables: make(map[string]models.TableInfo),
+	}
 	for rows.Next() {
 		var schemaName, tableName, columnName string
 		if err := rows.Scan(&schemaName, &tableName, &columnName); err != nil {
@@ -89,11 +111,26 @@ func ScanDatabaseByID(id int) error {
 				break
 			}
 		}
-		fmt.Printf("TABLE: %s.%s, COLUMN: %s, INFORMATION_TYPE: %s\n", schemaName, tableName, columnName, infoType)
 
+		fullTableName := fmt.Sprintf("%s.%s", schemaName, tableName)
+		table, exists := report.Tables[fullTableName]
+		if !exists {
+			table = models.TableInfo{
+				Columns: make(map[string]models.ColumnInfo),
+			}
+		}
+
+		table.Columns[columnName] = models.ColumnInfo{
+			InformationType: infoType,
+		}
+		report.Tables[fullTableName] = table
 	}
-	return nil
+	if err := rows.Err(); err != nil {
+		log.Printf("error during row iteration: %v", err)
+		return nil, err
+	}
 
+	return report, nil
 }
 
 func GetDatabaseByID(id int) (*models.DatabaseConfiguration, error) {
@@ -112,6 +149,24 @@ func GetDatabaseByID(id int) (*models.DatabaseConfiguration, error) {
 	}
 
 	return &dbConfig, nil
+}
+
+func GetReportByID(id int) (*models.Report, error) {
+	collection := config.GetDatabase().Collection("DatabaseReport")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	var report models.Report
+	filter := bson.M{"id": id}
+
+	err := collection.FindOne(ctx, filter).Decode(&report)
+	if err != nil {
+		log.Println("❌ Error Getting configuration :", err)
+		return nil, ErrReportNotFound
+	}
+
+	return &report, nil
 }
 
 func ConnectDatabaseMysql(dbConfig *models.DatabaseConfiguration) (*sql.DB, error) {
