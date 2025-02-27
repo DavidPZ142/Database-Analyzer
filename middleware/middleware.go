@@ -2,19 +2,14 @@ package middleware
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
 )
 
 func AuthMiddleware() gin.HandlerFunc {
-	if err := godotenv.Load(); err != nil {
-		log.Println("⚠️ Could not load .env file, using system variables")
-	}
 
 	key := os.Getenv("ENCRYPTION_KEY")
 	return func(c *gin.Context) {

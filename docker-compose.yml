@@ -10,9 +10,9 @@ services:
     ports:
       - "27017:27017"
     restart: always
-  mysql:
+  mysql_SuperMarket:
     image: mysql:latest
-    container_name: mysql1
+    container_name: SuperMarket
     environment:
       MYSQL_ROOT_PASSWORD: ultrasecret
       MYSQL_USER: miusuario
@@ -20,16 +20,29 @@ services:
     ports:
       - "3306:3306"
     volumes:
-      - mysql_data:/var/lib/mysql
+      - mysql_data_supermarket:/var/lib/mysql
       - ./databaseSuperMarket.sql:/docker-entrypoint-initdb.d/databaseSuperMarket.sql
     restart: always
-
+  mysql_Bussines:
+    image: mysql:latest
+    container_name: Bussines
+    environment:
+      MYSQL_ROOT_PASSWORD: BussinesRoot
+      MYSQL_USER: TheBoss
+      MYSQL_PASSWORD: BossPassword
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data_bussines:/var/lib/mysql
+      - ./databaseBussines.sql:/docker-entrypoint-initdb.d/databaseBussines.sql
+    restart: always
   app:
     build: .
     container_name: go_app
     depends_on:
       - mongo
-      - mysql
+      - mysql_SuperMarket
+      - mysql_Bussines
     environment:
       MONGO_URI: "mongodb://meli:secretPassword@mongo:27017/"
       MONGO_DATABASE: "test"
@@ -40,4 +53,5 @@ services:
 
 volumes:
   mongo_data:
-  mysql_data:
+  mysql_data_supermarket:
+  mysql_data_bussines:

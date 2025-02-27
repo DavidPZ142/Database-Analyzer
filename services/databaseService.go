@@ -112,6 +112,23 @@ func GenerateReport(db *sql.DB, id int) (*models.Report, error) {
 			}
 		}
 
+		if infoType == "N/A" {
+			count, err := utils.CreditCardDataSample(db, schemaName, tableName, columnName)
+			if err != nil {
+				log.Printf("Error counting matching credit card rows for %s.%s.%s: %v", schemaName, tableName, columnName, err)
+			} else if count > 1 {
+				infoType = "CREDIT_CARD"
+			}
+		}
+		if infoType == "N/A" {
+			count, err := utils.EmailDataSample(db, schemaName, tableName, columnName)
+			if err != nil {
+				log.Printf("Error counting matching email rows for %s.%s.%s: %v", schemaName, tableName, columnName, err)
+			} else if count > 1 {
+				infoType = "EMAIL"
+			}
+		}
+
 		fullTableName := fmt.Sprintf("%s.%s", schemaName, tableName)
 		table, exists := report.Tables[fullTableName]
 		if !exists {
