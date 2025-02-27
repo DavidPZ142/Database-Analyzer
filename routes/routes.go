@@ -10,6 +10,7 @@ import (
 func SetupRoutes(router *gin.Engine) {
 
 	router.POST("/login", controllers.Login)
+	router.POST("/register", controllers.SaveUser)
 
 	dbGroup := router.Group("/api/v1/database")
 	dbGroup.Use(middleware.AuthMiddleware())

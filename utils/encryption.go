@@ -9,17 +9,13 @@ import (
 	"io"
 	"log"
 	"os"
-
-	"github.com/joho/godotenv"
 )
 
 func GetKey() []byte {
-	if err := godotenv.Load(); err != nil {
-		log.Println("⚠️ Could not load .env file, using system variables")
-	}
+
 	key := os.Getenv("ENCRYPTION_KEY")
 	if key == "" {
-		log.Fatal("❌ MONGO_URI is not defined in the environment")
+		log.Fatal("❌ ENCRYPTION_KEY is not defined in the environment")
 	}
 	return []byte(key)
 }

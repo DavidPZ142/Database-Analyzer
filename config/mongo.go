@@ -6,8 +6,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/joho/godotenv"
-
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -15,9 +13,6 @@ import (
 var MongoClient *mongo.Client
 
 func ConnectDatabase() error {
-	if err := godotenv.Load(); err != nil {
-		log.Println("⚠️ Could not load .env file, using system variables")
-	}
 
 	mongoURI := os.Getenv("MONGO_URI")
 	if mongoURI == "" {
