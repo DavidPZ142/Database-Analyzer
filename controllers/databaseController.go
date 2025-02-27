@@ -74,5 +74,30 @@ func GetReportByID(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"Report": report})
+}
 
+func GetHTMLReportByID(c *gin.Context) {
+	idParam := c.Param("id")
+	id, err := strconv.Atoi(idParam)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "error": "ID must be a Integer"})
+		return
+	}
+
+	report, err := services.GetReportByID(id)
+	if err != nil {
+		if errors.Is(err, services.ErrReportNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"status": http.StatusNotFound, "error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"status": http.StatusInternalServerError, "error": err.Error()})
+		return
+	}
+
+	htmlReport, err := services.GenerateScanSummary(*report)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"status": http.StatusInternalServerError, "error": err.Error()})
+		return
+	}
+	c.Data(http.StatusOK, "text/html; charset=utf-8", []byte(htmlReport))
 }
