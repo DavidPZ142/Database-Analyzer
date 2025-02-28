@@ -104,13 +104,7 @@ func GenerateReport(db *sql.DB, id int) (*models.Report, error) {
 			continue
 		}
 
-		infoType := "N/A"
-		for typ, regex := range utils.InfoTypes {
-			if regex.MatchString(columnName) {
-				infoType = typ
-				break
-			}
-		}
+		infoType := utils.DetectInfoType(columnName)
 
 		if infoType == "N/A" {
 			count, err := utils.CreditCardDataSample(db, schemaName, tableName, columnName)

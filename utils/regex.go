@@ -55,3 +55,12 @@ func EmailDataSample(db *sql.DB, schemaName, tableName, columnName string) (int,
 	}
 	return count, nil
 }
+
+func DetectInfoType(columnName string) string {
+	for infoType, regex := range InfoTypes {
+		if regex.MatchString(columnName) {
+			return infoType
+		}
+	}
+	return "N/A"
+}
