@@ -102,8 +102,9 @@ func GenerateReport(db *sql.DB, id int) (*models.Report, error) {
 		return nil, ErrUserWithoutPrivilegies
 	}
 	report := &models.Report{
-		ID:     id,
-		Tables: make(map[string]models.TableInfo),
+		ID:        id,
+		CreatedAt: time.Now(),
+		Tables:    make(map[string]models.TableInfo),
 	}
 	for rows.Next() {
 		var schemaName, tableName, columnName string

@@ -112,6 +112,6 @@ func SaveInfoType(infoType *models.InfoType) error {
 		log.Printf("An error ocurred trying save a infoType %v", err)
 		return err
 	}
-	log.Printf("Save infoType : %d", infoType.Type)
+	log.Printf("Save infoType : %s", infoType.Type)
 	return nil
 }
