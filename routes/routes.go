@@ -19,5 +19,6 @@ func SetupRoutes(router *gin.Engine) {
 		dbGroup.POST("/scan/:id", controllers.ScanDatabaseByID)
 		dbGroup.GET("/scan/:id", controllers.GetReportByID)
 		dbGroup.GET("/scan/html/:id", controllers.GetHTMLReportByID)
+		dbGroup.POST("/infoType", controllers.SaveInfoType)
 	}
 }

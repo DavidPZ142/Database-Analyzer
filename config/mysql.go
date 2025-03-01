@@ -25,9 +25,10 @@ func ConnectMySQL(host string, port int, user string, password string) error {
 		return err
 	}
 
-	log.Println("Connect to Mysql")
+	log.Printf("✅ Connect to Mysql %v", dsn)
 	DBMySQL = db
 	return nil
+
 }
 
 func GetMySQLConnection() *sql.DB {

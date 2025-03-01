@@ -28,6 +28,7 @@ func SaveUser(user models.LoginCredentials) error {
 	if err != nil {
 		return err
 	}
+	log.Printf("Save user %v", user.Username)
 	return nil
 
 }

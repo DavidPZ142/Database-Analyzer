@@ -13,6 +13,7 @@ import (
 	_ "regexp"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo/options"
 
 	"time"
 )
@@ -54,6 +55,7 @@ func SaveDatabaseConfiguration(dbConn *models.DatabaseConfiguration) (int, error
 	if err != nil {
 		return 0, ErrInsertDocument
 	}
+	log.Printf("Save database with id : %d", newID)
 	return dbConn.ID, nil
 }
 
@@ -62,6 +64,7 @@ func ScanDatabaseByID(id int) error {
 	if err != nil {
 		return err
 	}
+	log.Printf("Start to scan database with 1 %d", id)
 	DBMySQL, err := ConnectDatabaseMysql(databaseConfig)
 	if err != nil {
 		return err
@@ -84,6 +87,11 @@ func ScanDatabaseByID(id int) error {
 }
 
 func GenerateReport(db *sql.DB, id int) (*models.Report, error) {
+	infoTypes, err := utils.GetInfoTypes(config.GetDatabase().Collection("InfoTypes"))
+	if err != nil {
+		log.Printf("Error obtain info types from mongo %v", query)
+		return nil, err
+	}
 	rows, err := db.Query(query)
 	if err != nil {
 		log.Println("Error running query")
@@ -104,8 +112,7 @@ func GenerateReport(db *sql.DB, id int) (*models.Report, error) {
 			continue
 		}
 
-		infoType := utils.DetectInfoType(columnName)
-
+		infoType := utils.DetectInfoType(columnName, infoTypes)
 		if infoType == "N/A" {
 			count, err := utils.CreditCardDataSample(db, schemaName, tableName, columnName)
 			if err != nil {
@@ -141,6 +148,7 @@ func GenerateReport(db *sql.DB, id int) (*models.Report, error) {
 		return nil, err
 	}
 
+	log.Printf("Successfully scanned database with id %d", id)
 	return report, nil
 }
 
@@ -170,8 +178,9 @@ func GetReportByID(id int) (*models.Report, error) {
 
 	var report models.Report
 	filter := bson.M{"id": id}
+	opts := options.FindOne().SetSort(bson.D{{Key: "_id", Value: -1}})
 
-	err := collection.FindOne(ctx, filter).Decode(&report)
+	err := collection.FindOne(ctx, filter, opts).Decode(&report)
 	if err != nil {
 		log.Println("❌ Error Getting configuration :", err)
 		return nil, ErrReportNotFound

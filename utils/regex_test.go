@@ -99,7 +99,7 @@ func TestDetectInfoType(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		result := utils.DetectInfoType(tc.columnName)
+		result := utils.DetectInfoType(tc.columnName, utils.InfoTypes)
 		if result != tc.expected {
 			t.Errorf("Para columnName '%s', se esperaba '%s' pero se obtuvo '%s'", tc.columnName, tc.expected, result)
 		}

@@ -1,10 +1,17 @@
 package utils
 
 import (
+	"Database_Analyzer/config"
+	"Database_Analyzer/models"
+	"context"
 	"database/sql"
 	"fmt"
 	"log"
 	"regexp"
+	"time"
+
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 var InfoTypes = map[string]*regexp.Regexp{
@@ -20,6 +27,36 @@ var InfoTypes = map[string]*regexp.Regexp{
 	"POSTAL_CODE":            regexp.MustCompile(`(?i)^(postal_?code|zip_?code|street)$`),
 	"PLACE":                  regexp.MustCompile(`(?i)^(city|state|country)$`),
 	"PAYMENT_METHOD":         regexp.MustCompile(`(?i)^(payment_?method)$`),
+}
+
+func GetInfoTypes(collection *mongo.Collection) (map[string]*regexp.Regexp, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	cursor, err := collection.Find(ctx, bson.M{})
+	if err != nil {
+		log.Printf("error obtain info types %v", err)
+	}
+	defer cursor.Close(ctx)
+	infoTypesMap := make(map[string]*regexp.Regexp)
+	for cursor.Next(ctx) {
+		var infoType models.InfoType
+		if err := cursor.Decode(&infoType); err != nil {
+			log.Printf("error decode info types %v", err)
+		}
+
+		re, err := regexp.Compile(infoType.Regex)
+		if err != nil {
+			log.Printf("Error compilando la expresión regular para el tipo %s: %v", infoType.Type, err)
+			continue
+		}
+
+		infoTypesMap[infoType.Type] = re
+	}
+
+	if err := cursor.Err(); err != nil {
+		log.Printf("error decode info types %s", err)
+	}
+	return infoTypesMap, nil
 }
 
 func CreditCardDataSample(db *sql.DB, schemaName, tableName, columnName string) (int, error) {
@@ -56,11 +93,25 @@ func EmailDataSample(db *sql.DB, schemaName, tableName, columnName string) (int,
 	return count, nil
 }
 
-func DetectInfoType(columnName string) string {
+func DetectInfoType(columnName string, InfoTypes map[string]*regexp.Regexp) string {
 	for infoType, regex := range InfoTypes {
 		if regex.MatchString(columnName) {
 			return infoType
 		}
 	}
 	return "N/A"
+}
+
+func SaveInfoType(infoType *models.InfoType) error {
+	collection := config.GetDatabase().Collection("InfoTypes")
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	_, err := collection.InsertOne(ctx, infoType)
+	if err != nil {
+		log.Printf("An error ocurred trying save a infoType %v", err)
+		return err
+	}
+	log.Printf("Save infoType : %d", infoType.Type)
+	return nil
 }

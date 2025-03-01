@@ -7,6 +7,7 @@ import (
 
 	"Database_Analyzer/models"
 	"Database_Analyzer/services"
+	"Database_Analyzer/utils"
 
 	"github.com/gin-gonic/gin"
 )
@@ -27,7 +28,7 @@ func SaveDatabaseConfiguration(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, gin.H{
-		"status": 201,
+		"status": http.StatusCreated,
 		"id":     id,
 	})
 }
@@ -100,4 +101,24 @@ func GetHTMLReportByID(c *gin.Context) {
 		return
 	}
 	c.Data(http.StatusOK, "text/html; charset=utf-8", []byte(htmlReport))
+}
+
+func SaveInfoType(c *gin.Context) {
+
+	var infoType models.InfoType
+
+	if err := c.ShouldBindJSON(&infoType); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "Error": err.Error()})
+		return
+	}
+
+	err := utils.SaveInfoType(&infoType)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"status": http.StatusInternalServerError, "error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{
+		"status": http.StatusCreated,
+	})
 }
