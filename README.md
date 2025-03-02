@@ -39,16 +39,16 @@ SELECT COUNT(*) as count
 | **Tipo** | **Regex** | **Descripción** |
 | --- | --- | --- |
 | **USERNAME** | ``(?i)^(user_?namelogin)$`` | Esta expresión regular detecta campos que representan el nombre de usuario |
-| **EMAIL_ADDRESS** | `(?i)^(email|e-?mail)$` | Detecta campos relacionados con direcciones de correo electrónico |
-| **CREDIT_CARD_NUMBER** | `(?i)^(credit_?card|cc_?number|card_?number|cvv)` | Identifica campos relacionados con datos de tarjetas de crédito |
-| **FIRST_NAME** | `(?i)^(first_?name|name|)` | Detecta campos que contienen el primer nombre de una persona |
-| **LAST_NAME** | `(?i)^(last_?name|surname)` |  Detecta campos relacionados con el apellido |
-| **PHONE_NUMBER** | `(?i)^(phone|telephone|mobile|cellphone)` | Identifica campos relacionados con números de teléfono |
-| **IP_ADDRESS** | ``(?i)^(ip_?address|ip)` | Detecta campos relacionados con direcciones IP |
-| **DATE_OF_BIRTH** | `(?i)^(dob|date_?of_?birth)` | Identifica campos relacionados con la fecha de nacimiento |
-| **SOCIAL_SECURITY_NUMBER** | `(?i)^(ssn|social_?security)` | social_?security)$` |
-| **POSTAL_CODE** | `(?i)^(postal_?code|zip_?code|street)` | Identifica campos relacionados con numeros de seguridad social |
-| **PLACE** | `(?i)^(city|state|country)` | Identifica campos relacionados con códigos postales o direcciones |
+| **EMAIL_ADDRESS** | ``(?i)^(email\|e-?mail)$`` | Detecta campos relacionados con direcciones de correo electrónico |
+| **CREDIT_CARD_NUMBER** | ``(?i)^(credit_?card\|cc_?number\|card_?number\|cvv)`` | Identifica campos relacionados con datos de tarjetas de crédito |
+| **FIRST_NAME** | ``(?i)^(first_?name\|name)`` | Detecta campos que contienen el primer nombre de una persona |
+| **LAST_NAME** | ``(?i)^(last_?name\|surname)`` |  Detecta campos relacionados con el apellido |
+| **PHONE_NUMBER** | ``(?i)^(phone\|telephone\|mobile\|cellphone)`` | Identifica campos relacionados con números de teléfono |
+| **IP_ADDRESS** | ``(?i)^(ip_?address\|ip)`` | Detecta campos relacionados con direcciones IP |
+| **DATE_OF_BIRTH** | ``(?i)^(dob\|date_?of_?birth)`` | Identifica campos relacionados con la fecha de nacimiento |
+| **SOCIAL_SECURITY_NUMBER** | ``(?i)^(ssn\|social_?security)`` | Identinfica campos relacionados con numeros de seguridad social |
+| **POSTAL_CODE** | ``(?i)^(postal_?code\|zip_?code\|street)`` | Identifica campos relacionados con códigos postales o direcciones |
+| **PLACE** | ``(?i)^(city\|state\|country)`` |  Identifica campos relacionados con lugares |
 | **PAYMENT_METHOD** | `(?i)^(payment_?method)` | Identifica campos relacionados con métodos de pago |
 
 Notas
