@@ -503,6 +503,7 @@ Success Response
 Clonar el proyecto
 
 ```html
+//VERY IMPORTANT FOR THE SCRIPT THAT INITIALISES THE MONGO DB
 git config --global core.autocrlf false
 git clone https://github.com/DavidPZ142/Database-Analyzer
 cd Database-Analyzer
