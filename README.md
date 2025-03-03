@@ -503,7 +503,7 @@ Success Response
 Clonar el proyecto
 
 ```html
-git config --global core.autocrlf true
+git config --global core.autocrlf false
 git clone https://github.com/DavidPZ142/Database-Analyzer
 cd Database-Analyzer
 ```
